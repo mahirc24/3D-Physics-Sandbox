@@ -34,7 +34,18 @@ exactly as `e²` predicts.
 
 ---
 
+## Results
+
+![Projectile trajectory](projectile.png)
+
+![Bounce trajectory](bounce.png)
+
+![Step time vs body count](perf_scaling.png)
+
+---
+
 ## What it does (and where each piece lives)
+
 
 | Capability | Implementation |
 |---|---|
