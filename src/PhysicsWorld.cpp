@@ -24,6 +24,9 @@ PhysicsWorld::PhysicsWorld(const WorldConfig& cfg) : cfg_(cfg) {
 }
 
 PhysicsWorld::~PhysicsWorld() {
+    // Release a transient mouse-pick grab before tearing anything down.
+    clearPick();
+
     // Remove & free constraints first (they reference bodies).
     for (auto& c : constraints_) {
         if (c) world_->removeConstraint(c.get());
@@ -141,6 +144,45 @@ int PhysicsWorld::addSlider(int a, int b, const btTransform& frameInA,
     const int idx = static_cast<int>(constraints_.size());
     constraints_.emplace_back(c);
     return idx;
+}
+
+// --- interactive mouse picking ----------------------------------------------
+btPoint2PointConstraint* PhysicsWorld::createPickConstraint(
+    int bodyId, const btVector3& worldPivot) {
+    clearPick();
+    btRigidBody* b = body(bodyId);
+    if (!b) return nullptr;
+
+    // Wake the body and stop it deactivating while grabbed.
+    b->activate(true);
+    b->setActivationState(DISABLE_DEACTIVATION);
+
+    // Convert the world grab point into the body's local frame.
+    const btVector3 localPivot = b->getCenterOfMassTransform().inverse() * worldPivot;
+    auto* p2p = new btPoint2PointConstraint(*b, localPivot);
+    // Soft settings so dragging feels springy instead of explosive.
+    p2p->m_setting.m_impulseClamp = 30.0f;
+    p2p->m_setting.m_tau          = 0.1f;
+
+    world_->addConstraint(p2p, /*disableCollisions=*/false);
+    pickConstraint_ = p2p;
+    return p2p;
+}
+
+void PhysicsWorld::updatePick(const btVector3& worldPivot) {
+    if (pickConstraint_) pickConstraint_->setPivotB(worldPivot);
+}
+
+void PhysicsWorld::clearPick() {
+    if (!pickConstraint_) return;
+    // Restore normal deactivation on the grabbed body.
+    if (btRigidBody* b = &pickConstraint_->getRigidBodyA()) {
+        b->forceActivationState(ACTIVE_TAG);
+        b->activate(true);
+    }
+    world_->removeConstraint(pickConstraint_);
+    delete pickConstraint_;
+    pickConstraint_ = nullptr;
 }
 
 // --- stepping ----------------------------------------------------------------

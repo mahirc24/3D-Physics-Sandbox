@@ -39,6 +39,18 @@ public:
     int addSlider(int a, int b, const btTransform& frameInA,
                   const btTransform& frameInB, btScalar lower, btScalar upper);
 
+    // --- interactive mouse picking ------------------------------------------
+    // Grab `bodyId` at world point `worldPivot` with a soft point-to-point
+    // constraint (used by the viewer to drag bodies with the cursor). Replaces
+    // any existing pick. Returns the constraint (owned by PhysicsWorld).
+    btPoint2PointConstraint* createPickConstraint(int bodyId,
+                                                  const btVector3& worldPivot);
+    // Move the current pick target to a new world point.
+    void updatePick(const btVector3& worldPivot);
+    // Release the current pick, if any.
+    void clearPick();
+    bool hasPick() const { return pickConstraint_ != nullptr; }
+
     // --- stepping ------------------------------------------------------------
     // Advance one WorldConfig::timeStep. Returns wall-clock time in milliseconds.
     double step();
@@ -72,6 +84,7 @@ private:
     std::vector<std::unique_ptr<BodyRecord>>   bodies_;
     std::unordered_map<int, BodyRecord*>       byId_;
     std::vector<std::unique_ptr<btTypedConstraint>> constraints_;
+    btPoint2PointConstraint* pickConstraint_ = nullptr;  // transient mouse grab
 
     int    nextId_    = 0;
     int    stepCount_ = 0;
