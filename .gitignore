@@ -1,0 +1,8 @@
+build/
+*.o
+*.csv
+*.png
+*.json
+*.debug
+__pycache__/
+*.pyc

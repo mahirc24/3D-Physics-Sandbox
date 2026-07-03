@@ -1,0 +1,5 @@
+# Optional Python dependencies for the analysis/plotting scripts.
+# run_tests.py and validate_physics.py use only the standard library.
+# Plotting (performance_analysis.py --plot, plot_trajectories.py) needs:
+matplotlib>=3.5
+numpy>=1.21
