@@ -211,3 +211,13 @@ results are close to analytic but not exact: trajectory error scales like
 iterations). These are properties of real-time rigid-body simulation, and the
 tests assert against physically appropriate tolerances rather than pretending the
 solver is exact.
+
+
+
+
+./build/sandbox --list
+./build/sandbox --scenario projectile --steps 200
+./build/sandbox --scenario ccd --steps 200
+./build/sandbox --scenario ccd --steps 200 --no-ccd
+./build/sandbox_tests
+python3 scripts/run_tests.py
